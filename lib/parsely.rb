@@ -1,4 +1,6 @@
 require 'set'
+require 'english'
+$OUTPUT_FIELD_SEPARATOR = ' '
 class Parsely
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
 
@@ -63,13 +65,12 @@ class Parsely
     p :result, result
     result.each do |entry|
       p :entry, entry
-      puts entry.map do |item|
-        if item.is_a? Accumulator
-          item.final
-        else
+      p :entry, entry.to_s
+      outline = entry.map do |item|
           item
-        end
-      end
+      end.join($OUTPUT_FIELD_SEPARATOR) rescue next #implicitly would be that anyway
+      p :outline, outline
+      puts outline
     end
   end
 
