@@ -4,28 +4,44 @@ $OUTPUT_FIELD_SEPARATOR = ' '
 class Parsely
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
 
-  def p *args
-    super(args) if $DEBUG
-  end
+    def p args
+      STDERR.puts(args.inspect) #if $DEBUG
+    end
 
   Value = Struct.new :index do
     def to_s
       "value(#{index})"
     end
+    def process(items)
+      res = items[index-1]
+      def res.value
+        to_s
+      end
+      res
+    end
   end
-  Operation = Struct.new :opname do
+  Sum = Struct.new :index do
+    @@running_value = 0
     def to_s
-      "op:#{opname}"
+      "sum(#{inded})"
+    end
+    Result = proc {@@running_value}
+    def Result.value
+      call
+    end
+    def process(items)
+      @@running_value += items[index-1].to_i
+      Result
     end
   end
   def parse(expr)
     elems=expr.split
     elems.map do |e|
       case e
-      when /\$\d+/
-        Value.new(e)
-      when /\w+/
-        Operation.new(e)
+      when /sum\(\_(\d+)\)/
+        Sum.new($2.to_i)
+      when /\_(\d+)/
+        Value.new($1.to_i)
       end
     end
   end
@@ -34,47 +50,34 @@ class Parsely
       abort("usage #$0 <expr> <file file file| stdin >")
     end
     expr = ARGV.shift
-    p :argv, ARGV
-    expr = ' [' +
-      expr.gsub(/\_(\d+)/ , '__dollar__[\1]') +
-      ']'
-
     main_loop(expr,ARGF)
   end
 
   def main_loop(expr,lines)
-
-    p :eprelines, expr, lines
-    result = Array.new
+    ast=parse(expr)
+    result = []
     lines.each do |line|
-      p :line, line
       items = line.scan(RGX).map do |a| 
         a.find do |e| 
           !e.nil? 
         end 
       end
-      p :items, items
-      __dollar__ = [ "zero is not an item"]  + items
-      result << eval(expr)
+      cols = ast.map do |a| 
+        
+        col= a.process(items)
+        # p res
+      end 
+      result << cols
     end
-
-    if result.empty?
-      exit
-    end
-
-    p :result, result
-    result.each do |entry|
-      p :entry, entry
-      p :entry, entry.to_s
-      outline = entry.map do |item|
-        if item.is_a? Operation
-          item.final
-        else
-          item
-        end
-      end.join($OUTPUT_FIELD_SEPARATOR) rescue next #implicitly would be that anyway
-      p :outline, outline
-      puts outline
+    p result
+    result.each do |cols|
+      p cols
+      result_line = cols.map do |col|
+        p col
+        p col.value
+        col.value
+      end.join
+      puts result_line
     end
   end
 
