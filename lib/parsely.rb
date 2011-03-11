@@ -21,17 +21,19 @@ class Parsely
     end
   end
   Sum = Struct.new :index do
-    @@running_value = 0
+   
     def to_s
       "sum(#{inded})"
     end
-    Result = proc {@@running_value}
-    def Result.value
-      call
+    running_value = 0
+    Accumulator = proc {|add| running_value+=add}
+    def Accumulator.value
+      call 0
     end
     def process(items)
-      @@running_value += items[index-1].to_i
-      Result
+      #p [:sum, items,items[index-1].to_i, Accumulator.value]
+      Accumulator.call items[index-1].to_i
+      Accumulator
     end
   end
   def parse(expr)
@@ -39,7 +41,7 @@ class Parsely
     elems.map do |e|
       case e
       when /sum\(\_(\d+)\)/
-        Sum.new($2.to_i)
+        Sum.new($1.to_i)
       when /\_(\d+)/
         Value.new($1.to_i)
       end
@@ -66,15 +68,17 @@ class Parsely
         a.process(items)
       end 
     end
-    p result
+    last = []
     result.each do |cols|
-      p cols
       result_line = cols.map do |col|
-        p col
-        p col.value
         col.value
       end.join
+      same_results = cols.zip(last).map do |a,b| 
+        a.object_id == b.object_id && !a.is_a?(Numeric) 
+      end.all?
+      break if same_results
       puts result_line
+      last = cols
     end
   end
 
