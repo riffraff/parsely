@@ -67,7 +67,11 @@ class Parsely
       p :entry, entry
       p :entry, entry.to_s
       outline = entry.map do |item|
+        if item.is_a? Operation
+          item.final
+        else
           item
+        end
       end.join($OUTPUT_FIELD_SEPARATOR) rescue next #implicitly would be that anyway
       p :outline, outline
       puts outline
