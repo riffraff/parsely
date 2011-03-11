@@ -13,7 +13,7 @@ class Parsely
       "value(#{index})"
     end
     def process(items)
-      res = items[index-1]
+      res = items[index]
       def res.value
         to_s
       end
@@ -21,19 +21,41 @@ class Parsely
     end
   end
   Sum = Struct.new :index do
-   
     def to_s
-      "sum(#{inded})"
+      "sum(#{index})"
     end
-    running_value = 0
-    Accumulator = proc {|add| running_value+=add}
-    def Accumulator.value
-      call 0
+    def initialize index
+      super
+      @running_value = 0
+      @result = proc { @running_value }
+      def @result.value
+        call
+      end
     end
     def process(items)
-      #p [:sum, items,items[index-1].to_i, Accumulator.value]
-      Accumulator.call items[index-1].to_i
-      Accumulator
+      #p [:sum, items,items[index-1].to_i, @accumulator.value]
+      @running_value += items[index].to_i
+      @result
+    end
+  end
+  Avg = Struct.new :index do
+    def to_s
+      "sum(#{index})"
+    end
+    def initialize index
+      super
+      @running_value = 0
+      @running_count = 0
+      @result = proc { @running_value/@running_count.to_f }
+      def @result.value
+        call
+      end
+    end
+    def process(items)
+      #p [:sum, items,items[index-1].to_i, @accumulator.value]
+      @running_value += items[index].to_i
+      @running_count += 1
+      @result
     end
   end
   def parse(expr)
@@ -42,6 +64,8 @@ class Parsely
       case e
       when /sum\(\_(\d+)\)/
         Sum.new($1.to_i)
+      when /avg\(\_(\d+)\)/
+        Avg.new($1.to_i)
       when /\_(\d+)/
         Value.new($1.to_i)
       end
@@ -59,7 +83,7 @@ class Parsely
     ast=parse(expr)
     result = []
     result = lines.map do |line|
-      items = line.scan(RGX).map do |a| 
+      items = ['ignore']+line.scan(RGX).map do |a| 
         a.find do |e| 
           !e.nil? 
         end 

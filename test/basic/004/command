@@ -1,0 +1,1 @@
+parsely 'avg(_1)' input.log
