@@ -1,0 +1,1 @@
+parsely 'avg(_1) sum(_1) _2' input.log
