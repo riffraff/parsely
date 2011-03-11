@@ -14,50 +14,44 @@ end
 class Parsely
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
 
-    def p args
-      STDERR.puts(args.inspect) #if $DEBUG
-    end
+  def p args
+    STDERR.puts(args.inspect) #if $DEBUG
+  end
 
   Value = Struct.new :index do
-    def to_s
-      "value(#{index})"
-    end
     def process(items)
       items[index]
     end
   end
-  Sum = Struct.new :index do
-    def to_s
-      "sum(#{index})"
+  Ops = {
+    :sum => Struct.new(:index) do
+      def initialize index
+        super
+        @running_value = 0
+        @result = proc { @running_value }
+      end
+      def process(items)
+        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+        @running_value += items[index].to_i
+        @result
+      end
+    end,
+    :avg => Struct.new(:index)do
+      def initialize index
+        super
+        @running_value = 0
+        @running_count = 0
+        @result = proc { @running_value/@running_count.to_f }
+      end
+      def process(items)
+        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+        @running_value += items[index].to_i
+        @running_count += 1
+        @result
+      end
     end
-    def initialize index
-      super
-      @running_value = 0
-      @result = proc { @running_value }
-    end
-    def process(items)
-      #p [:sum, items,items[index-1].to_i, @accumulator.value]
-      @running_value += items[index].to_i
-      @result
-    end
-  end
-  Avg = Struct.new :index do
-    def to_s
-      "sum(#{index})"
-    end
-    def initialize index
-      super
-      @running_value = 0
-      @running_count = 0
-      @result = proc { @running_value/@running_count.to_f }
-    end
-    def process(items)
-      #p [:sum, items,items[index-1].to_i, @accumulator.value]
-      @running_value += items[index].to_i
-      @running_count += 1
-      @result
-    end
-  end
+  }
+=begin
   Freq = Struct.new :index do
     def to_s
       "freq(#{index})"
@@ -75,14 +69,13 @@ class Parsely
       @result
     end
   end
+=end
   def parse(expr)
     elems=expr.split
     elems.map do |e|
       case e
-      when /sum\(\_(\d+)\)/
-        Sum.new($1.to_i)
-      when /avg\(\_(\d+)\)/
-        Avg.new($1.to_i)
+      when /(\w+)\(\_(\d+)\)/
+        Ops[$1.to_sym].new($2.to_i)
       when /\_(\d+)/
         Value.new($1.to_i)
       end
