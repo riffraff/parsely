@@ -56,18 +56,15 @@ class Parsely
   def main_loop(expr,lines)
     ast=parse(expr)
     result = []
-    lines.each do |line|
+    result = lines.map do |line|
       items = line.scan(RGX).map do |a| 
         a.find do |e| 
           !e.nil? 
         end 
       end
-      cols = ast.map do |a| 
-        
-        col= a.process(items)
-        # p res
+      ast.map do |a| 
+        a.process(items)
       end 
-      result << cols
     end
     p result
     result.each do |cols|
