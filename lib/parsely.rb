@@ -96,7 +96,7 @@ class Parsely
     result.each do |cols|
       result_line = cols.map do |col|
         col.value
-      end.join
+      end.join.strip
       same_results = cols.zip(last).map do |a,b| 
         a.object_id == b.object_id && !a.is_a?(Numeric) 
       end.all?
