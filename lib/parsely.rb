@@ -93,7 +93,7 @@ class Parsely
     ast=parse(expr)
     result = []
     result = lines.map do |line|
-      items = ['ignore']+line.scan(RGX).map do |a| 
+      items = [line]+line.scan(RGX).map do |a| 
         # XXX
         a.find do |e| 
           !e.nil? 
