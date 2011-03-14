@@ -1,5 +1,5 @@
 require 'set'
-require 'english'
+require 'English'
 $OUTPUT_FIELD_SEPARATOR = ' '
 class String
   def value
