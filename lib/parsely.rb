@@ -7,6 +7,7 @@ class String
   end
 end
 class Proc
+  attr_accessor :single
   def value
     call
   end
@@ -29,6 +30,7 @@ class Parsely
         super
         @running_value = 0
         @result = proc { @running_value }
+        @result.single = true
       end
       def process(items)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
@@ -42,6 +44,7 @@ class Parsely
         @running_value = 0
         @running_count = 0
         @result = proc { @running_value/@running_count.to_f }
+        @result.single = true
       end
       def process(items)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
@@ -49,27 +52,30 @@ class Parsely
         @running_count += 1
         @result
       end
+    end,
+    :freq => Struct.new(:index)do
+      def initialize index
+        super
+      	@running_freqs = Hash.new(0)
+        @running_count = 0
+	as_ary=nil
+        @result = proc do
+          if as_ary.nil?
+            as_ary=@running_freqs.sort_by do |k,v| [-v,k] end.each
+          end
+          k,v = as_ary.next rescue nil
+          [v, k]
+        end
+      end
+      def process(items)
+        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+        @running_freqs[items[index]]+=1
+        @running_count += 1
+        @result
+      end
     end
   }
-=begin
-  Freq = Struct.new :index do
-    def to_s
-      "freq(#{index})"
-    end
-    def initialize index
-      super
-      @running_freqs = Hash.new(0)
-      @running_count = 0
-      @result = proc { @running_freqs.map do |k,v| [k, v/@running_count.to_f] end}
-    end
-    def process(items)
-      #p [:sum, items,items[index-1].to_i, @accumulator.value]
-      @running_freqs[items[index]]+=1
-      @running_count += 1
-      @result
-    end
-  end
-=end
+
   def parse(expr)
     elems=expr.split
     elems.map do |e|
@@ -107,10 +113,10 @@ class Parsely
     result.each do |cols|
       result_line = cols.map do |col|
         next if col.nil?
-        col.value
-      end.join.strip
+        col.value 
+      end.join.strip 
       same_results = cols.zip(last).map do |a,b| 
-        a.object_id == b.object_id && !a.is_a?(Numeric) 
+        a.respond_to?(:single) && a.single && a.object_id == b.object_id && !a.is_a?(Numeric) 
       end.all?
       break if same_results
       puts result_line
