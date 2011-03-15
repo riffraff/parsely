@@ -73,7 +73,41 @@ class Parsely
         @running_count += 1
         @result
       end
-    end
+    end,
+    :stats => Struct.new(:index) do
+      def initialize index
+        require 'rubygems'
+        require 'ministat'
+        super
+        @running_values = []
+        cached = nil
+        @result = proc do  
+          unless cached
+            data = MiniStat::Data.new(@running_values)
+            cached = { 
+              "Mean"=>data.mean,
+              "Geometric Mean"=>data.geometric_mean,
+              "Harmonic Mean"=>data.harmonic_mean,
+              "Median"=>data.median ,
+              "Min"=>data.data.min ,
+              "Q1"=>data.q1,
+              "Q3"=>data.q3,
+              "Max"=>data.data.max,
+              "IQR"=>data.iqr,
+              "Outliers"=>data.outliers.inspect,
+              "Variance"=>data.variance ,
+              "Std Dev"=>data.std_dev,
+            }.sort.each
+          end
+          cached.next
+        end
+      end
+      def process(items)
+        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+        @running_values << items[index].to_i
+        @result
+      end
+    end,
   }
 
   def parse(expr)
