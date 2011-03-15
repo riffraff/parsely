@@ -63,7 +63,7 @@ class Parsely
           if as_ary.nil?
             as_ary=@running_freqs.sort_by do |k,v| [-v,k] end.each
           end
-          k,v = as_ary.next rescue nil
+          k,v = as_ary.next 
           [v, k]
         end
       end
@@ -122,6 +122,8 @@ class Parsely
       puts result_line
       last = cols
     end
+  rescue StopIteration
+    # end
   end
 
 end
