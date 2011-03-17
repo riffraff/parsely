@@ -14,7 +14,14 @@ class Proc
 end
 class Parsely
   def self.cmd(&block)
-    Struct.new :index, &block
+    klass = Struct.new :value, &block
+    klass.class_eval do 
+      def process(items)
+        value.assign(items)
+        _process(value)
+      end
+    end
+    klass
   end
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
 
@@ -22,23 +29,35 @@ class Parsely
     STDERR.puts(args.inspect) #if $DEBUG
   end
 
-  Value = cmd do
-    def process(value)
-      value
+  Value = Struct.new :index, :value do
+    def assign(items)
+      self.value = items[index]
+    end
+    def process(items)
+      items[index]
+    end
+    def to_i
+      value.to_i
+    end
+    def to_f
+      value.to_f
+    end
+    def to_s
+      value.to_s
     end
   end
   Ops = {
     :min => cmd do
-      def initialize index
+      def initialize value
         super
         @running_value = Float::MAX #-Inf would be better
         @result = proc { @running_value }
         @result.single = true
       end
-      def process(value)
-        value = value.to_f
-        if @running_value  > value 
-          @running_value = value
+      def _process(value)
+        if value.to_f < @running_value  
+          @running_value = value.to_f
+          #p :updating_min,value, @running_value, @result.value
         end
         @result
       end
@@ -50,10 +69,10 @@ class Parsely
         @result = proc { @running_value }
         @result.single = true
       end
-      def process(value)
-        value = value.to_f
-        if @running_value  < value 
-          @running_value = value
+      def _process(value)
+        if value.to_f > @running_value
+          @running_value = value.to_f
+          #p :updating_max,value, @running_value, @result.value
         end
         @result
       end
@@ -65,11 +84,10 @@ class Parsely
           @result = proc { @running_value }
           @result.single = true
         end
-        def process(value)
-          #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_value += value.to_i
-        @result
-      end
+        def _process(value)
+          @running_value += value.to_i
+          @result
+        end
     end,
     :avg => cmd do
       def initialize index
@@ -79,8 +97,7 @@ class Parsely
         @result = proc { @running_value/@running_count.to_f }
         @result.single = true
       end
-      def process(value)
-        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+      def _process(value)
         @running_value += value.to_i
         @running_count += 1
         @result
@@ -100,9 +117,8 @@ class Parsely
           [v, k]
         end
       end
-      def process(value)
-        #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_freqs[value]+=1
+      def _process(value)
+        @running_freqs[value.to_s]+=1
         @running_count += 1
         @result
       end
@@ -135,8 +151,7 @@ class Parsely
           cached.next
         end
       end
-      def process(value)
-        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+      def _process(value)
         @running_values << value.to_i
         @result
       end
@@ -152,7 +167,7 @@ class Parsely
         if klass.nil?
           abort "unknown op '#$1'"
         end
-        klass.new($2.to_i)
+        klass.new(Value.new($2.to_i))
       when /\_(\d+)/
         Value.new($1.to_i)
       end
@@ -179,7 +194,7 @@ class Parsely
       #XXX ugly
       next unless items
       ast.map do |a| 
-        a.process(items[a.index])
+        a.process(items)
       end 
     end
     last = []
