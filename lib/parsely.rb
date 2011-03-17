@@ -118,7 +118,11 @@ class Parsely
     elems.map do |e|
       case e
       when /(\w+)\(\_(\d+)\)/
-        Ops[$1.to_sym].new($2.to_i)
+        klass=Ops[$1.to_sym]
+        if klass.nil?
+          abort "unknown op '#$1'"
+        end
+        klass.new($2.to_i)
       when /\_(\d+)/
         Value.new($1.to_i)
       end
