@@ -19,7 +19,7 @@ class Parsely
     STDERR.puts(args.inspect) #if $DEBUG
   end
 
-  Value = Struct.new :index do
+  Value = Struct.new(:index) do
     def process(items)
       items[index]
     end
