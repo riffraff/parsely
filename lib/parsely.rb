@@ -57,7 +57,6 @@ class Parsely
       def _process(value)
         if value.to_f < @running_value  
           @running_value = value.to_f
-          #p :updating_min,value, @running_value, @result.value
         end
         @result
       end
@@ -72,7 +71,6 @@ class Parsely
       def _process(value)
         if value.to_f > @running_value
           @running_value = value.to_f
-          #p :updating_max,value, @running_value, @result.value
         end
         @result
       end
