@@ -13,32 +13,35 @@ class Proc
   end
 end
 class Parsely
+  def self.cmd(&block)
+    Struct.new :index, &block
+  end
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
 
   def p args
     STDERR.puts(args.inspect) #if $DEBUG
   end
 
-  Value = Struct.new :index do
-    def process(items)
-      items[index]
+  Value = cmd do
+    def process(value)
+      value
     end
   end
   Ops = {
-    :sum => Struct.new(:index) do
+    :sum => cmd do
       def initialize index
         super
         @running_value = 0
         @result = proc { @running_value }
         @result.single = true
       end
-      def process(items)
+      def process(value)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_value += items[index].to_i
+        @running_value += value.to_i
         @result
       end
     end,
-    :avg => Struct.new(:index)do
+    :avg => cmd do
       def initialize index
         super
         @running_value = 0
@@ -46,14 +49,14 @@ class Parsely
         @result = proc { @running_value/@running_count.to_f }
         @result.single = true
       end
-      def process(items)
+      def process(value)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_value += items[index].to_i
+        @running_value += value.to_i
         @running_count += 1
         @result
       end
     end,
-    :freq => Struct.new(:index)do
+    :freq => cmd do
       def initialize index
         super
       	@running_freqs = Hash.new(0)
@@ -67,14 +70,14 @@ class Parsely
           [v, k]
         end
       end
-      def process(items)
+      def process(value)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_freqs[items[index]]+=1
+        @running_freqs[value]+=1
         @running_count += 1
         @result
       end
     end,
-    :stats => Struct.new(:index) do
+    :stats => cmd do
       def initialize index
         require 'rubygems'
         require 'ministat'
@@ -102,9 +105,9 @@ class Parsely
           cached.next
         end
       end
-      def process(items)
+      def process(value)
         #p [:sum, items,items[index-1].to_i, @accumulator.value]
-        @running_values << items[index].to_i
+        @running_values << value.to_i
         @result
       end
     end,
@@ -140,7 +143,7 @@ class Parsely
         end 
       end
       ast.map do |a| 
-        a.process(items)
+        a.process(items[a.index])
       end 
     end
     last = []
