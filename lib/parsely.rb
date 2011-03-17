@@ -28,15 +28,45 @@ class Parsely
     end
   end
   Ops = {
-    :sum => cmd do
+    :min => cmd do
       def initialize index
         super
-        @running_value = 0
+        @running_value = Float::MAX #-Inf would be better
         @result = proc { @running_value }
         @result.single = true
       end
       def process(value)
-        #p [:sum, items,items[index-1].to_i, @accumulator.value]
+        value = value.to_f
+        if @running_value  > value 
+          @running_value = value
+        end
+        @result
+      end
+    end,
+      :max => cmd do
+      def initialize index
+        super
+        @running_value = Float::MIN #-Inf would be better
+        @result = proc { @running_value }
+        @result.single = true
+      end
+      def process(value)
+        value = value.to_f
+        if @running_value  < value 
+          @running_value = value
+        end
+        @result
+      end
+      end,
+        :sum => cmd do
+        def initialize index
+          super
+          @running_value = 0
+          @result = proc { @running_value }
+          @result.single = true
+        end
+        def process(value)
+          #p [:sum, items,items[index-1].to_i, @accumulator.value]
         @running_value += value.to_i
         @result
       end
@@ -141,11 +171,13 @@ class Parsely
     result = []
     result = lines.map do |line|
       items = [line]+line.scan(RGX).map do |a| 
-        # XXX
+        # XXX horrible
         a.find do |e| 
           !e.nil? 
         end 
       end
+      #XXX ugly
+      next unless items
       ast.map do |a| 
         a.process(items[a.index])
       end 

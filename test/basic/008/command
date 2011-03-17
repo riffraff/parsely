@@ -1,0 +1,1 @@
+parsely 'min(_1) max(_2)' input.log
