@@ -157,8 +157,9 @@ class Parsely
   }
 
   def parse(expr)
-    elems=expr.split
-    elems.map do |e|
+    val, cond = expr.split(/ if /)
+    elems=val.split
+    r=elems.map do |e|
       case e
       when /(\w+)\(\_(\d+)\)/
         klass=Ops[$1.to_sym]
@@ -170,7 +171,18 @@ class Parsely
         Value.new($1.to_i)
       end
     end
+    [r, parse_cond(cond)]
   end
+
+  def parse_cond str
+    case str
+    when %r[/.*/]
+      proc { |x| eval(str) === x }
+    else
+      proc { |x| true }
+    end
+  end
+
   def main
     if ARGV.empty?
       abort("usage #$0 <expr> <file file file| stdin >")
@@ -180,7 +192,7 @@ class Parsely
   end
 
   def main_loop(expr,lines)
-    ast=parse(expr)
+    ast, cond =parse(expr)
     result = []
     result = lines.map do |line|
       items = [line]+line.scan(RGX).map do |a| 
@@ -192,7 +204,7 @@ class Parsely
       #XXX ugly
       next unless items
       ast.map do |a| 
-        a.process(items)
+        a.process(items) if cond[line]
       end 
     end
     last = []
@@ -205,6 +217,7 @@ class Parsely
         a.respond_to?(:single) && a.single && a.object_id == b.object_id && !a.is_a?(Numeric) 
       end.all?
       break if same_results
+      next if result_line.empty?
       puts result_line
       last = cols
     end
