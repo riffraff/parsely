@@ -158,6 +158,7 @@ class Parsely
 
   def parse(expr)
     val, cond = expr.split(/ if /)
+                               p [ val, cond]
     elems=val.split
     r=elems.map do |e|
       case e

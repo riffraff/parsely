@@ -1,0 +1,1 @@
+parsely 'sum(_2) if _2 < 3' counts.txt
