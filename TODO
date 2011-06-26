@@ -1,0 +1,8 @@
+- do by using regex to split on last by <field> and assume none if missing and just run as map over groups
+- _2 in dump by _1 in other
+- _2 in dump by _1 in other
++ _1 if /www/
+- _1 if _2 =~ x
+- .parselyrc
+- split by: if a X or not, or if _1 in other_file (subsides comm)
+- in "foo 1\nbar 2" "sum(_2) if _2 < 3" to see how much I can delete

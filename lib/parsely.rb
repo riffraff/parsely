@@ -1,6 +1,40 @@
 require 'set'
 require 'English'
 $OUTPUT_FIELD_SEPARATOR = ' '
+
+  def p args
+    STDERR.puts(args.inspect) #if $DEBUG
+  end
+
+class PseudoBinding
+  class PerlVar < String
+    def <=> other
+      if other.is_a? Numeric
+        to_f <=> other
+      else
+        super
+      end
+    end
+    def inspect
+      "PerlVar(#{super})"
+    end
+  end
+  PerlNil = PerlVar.new ''
+  def initialize vals
+    @vals = vals.map {|x| PerlVar.new(x)}
+  end
+  def method_missing name, *args
+    if args.empty?
+      if name =~ /_(\d+)/
+        @vals[$1.to_i] || PerlNil
+      else
+        name.to_s
+      end
+    else
+      super
+    end
+  end
+end
 class String
   def value
     to_s
@@ -24,11 +58,6 @@ class Parsely
     klass
   end
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
-
-  def p args
-    STDERR.puts(args.inspect) #if $DEBUG
-  end
-
   Value = Struct.new :index, :value do
     def assign(items)
       self.value = items[index]
@@ -158,7 +187,7 @@ class Parsely
 
   def parse(expr)
     val, cond = expr.split(/ if /)
-                               p [ val, cond]
+                              # p [ val, cond]
     elems=val.split
     r=elems.map do |e|
       case e
@@ -178,9 +207,11 @@ class Parsely
   def parse_cond str
     case str
     when %r[/.*/]
-      proc { |x| eval(str) === x }
+      proc { |bnd| bnd.instance_eval(str) === bnd._0 }
+    when nil, ''
+      proc { |bnd| true }
     else
-      proc { |x| true }
+    proc { |bnd| bnd.instance_eval(str) }
     end
   end
 
@@ -196,6 +227,7 @@ class Parsely
     ast, cond =parse(expr)
     result = []
     result = lines.map do |line|
+      line.chomp!
       items = [line]+line.scan(RGX).map do |a| 
         # XXX horrible
         a.find do |e| 
@@ -204,8 +236,9 @@ class Parsely
       end
       #XXX ugly
       next unless items
+      b = PseudoBinding.new(items)
       ast.map do |a| 
-        a.process(items) if cond[line]
+        a.process(items) if cond[b]
       end 
     end
     last = []
