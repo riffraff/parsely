@@ -5,4 +5,13 @@
 - _1 if _2 =~ x
 - .parselyrc
 - split by: if a X or not, or if _1 in other_file (subsides comm)
-- in "foo 1\nbar 2" "sum(_2) if _2 < 3" to see how much I can delete
++ in "foo 1\nbar 2" "sum(_2) if _2 < 3" to see how much I can delete
+- _1._1 for submatch (e.g. user agent)
+- index of <foo> (e.g. when something is processing ines and you want to check where it is)
+- skip line e.g. 123\na\nb\nc -> parsely _2 unless idx = 0
+- normalize e.g. uniq on 
+/?email=digest%40digg.com&name=&callback=jsonp1310305312089
+/?email=digest%40digg.com&name=&callback=jsonp1310305312088
+/?email=digest%40digg.com&name=&callback=jsonp1310305312085
+/?email=digest%40digg.com&name=&callback=jsonp1310305312086
+skip jsonp bit
