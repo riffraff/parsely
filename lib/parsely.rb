@@ -20,8 +20,9 @@ class PseudoBinding
     end
   end
   PerlNil = PerlVar.new ''
-  def initialize vals
-    @vals = vals.map {|x| PerlVar.new(x)}
+  attr :line
+  def initialize lineno, vals
+    @line, @vals = lineno, vals.map {|x| PerlVar.new(x)}
   end
   def method_missing name, *args
     if args.empty?
@@ -226,7 +227,7 @@ class Parsely
   def main_loop(expr,lines)
     ast, cond =parse(expr)
     result = []
-    result = lines.map do |line|
+    result = lines.map.with_index do |line, lineno|
       line.chomp!
       items = [line]+line.scan(RGX).map do |a| 
         # XXX horrible
@@ -236,7 +237,7 @@ class Parsely
       end
       #XXX ugly
       next unless items
-      b = PseudoBinding.new(items)
+      b = PseudoBinding.new(lineno, items)
       ast.map do |a| 
         a.process(items) if cond[b]
       end 
