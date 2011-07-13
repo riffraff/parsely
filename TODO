@@ -15,3 +15,5 @@
 /?email=digest%40digg.com&name=&callback=jsonp1310305312085
 /?email=digest%40digg.com&name=&callback=jsonp1310305312086
 skip jsonp bit
+summaryse is a cool extension from which to steal stuff. Maybe provide basic functionalities through that
+- given [/m/09_pbpl      /type/object/key        /soft/isbn/9780491035453,..] and [/m/077601h      /book/isbn/book_editions        /m/09_pbpl] get [/m/09_pbpl /soft/isbn/9780491035453]
