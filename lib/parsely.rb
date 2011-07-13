@@ -1,5 +1,4 @@
 require 'set'
-require 'parsely/version'
 require 'English'
 $OUTPUT_FIELD_SEPARATOR = ' '
 

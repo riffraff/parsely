@@ -1,0 +1,1 @@
+parsely 'sum(_2) if line == 0' counts.txt
