@@ -9,7 +9,9 @@ Gem::Specification.new do |s|
   s.email       = ["rff.rff+parsely@gmail.com"]
   s.homepage    = "http://github.com/riffraff/parsely"
   s.summary     = %q{a simple tool for text file wrangling}
-  s.description = %q{a simple tool for text file wrangling}
+  s.description = %q{parsely is a simple tool for managing text files.
+                     Mostly to replace a lot of awk/sed/ruby/perl one-off scripts.
+                     This is an internal release, guaranteed to break and ruin your life.}
 
   #s.rubyforge_project = "parsely"
 
