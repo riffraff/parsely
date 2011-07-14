@@ -106,17 +106,17 @@ class Parsely
         @result
       end
       end,
-        :sum => cmd do
-        def initialize index
-          super
-          @running_value = 0
-          @result = proc { @running_value }
-          @result.single = true
-        end
-        def _process(value)
-          @running_value += value.to_i
-          @result
-        end
+    :sum => cmd do
+      def initialize index
+        super
+        @running_value = 0
+        @result = proc { @running_value }
+        @result.single = true
+      end
+      def _process(value)
+        @running_value += value.to_i
+        @result
+      end
     end,
     :avg => cmd do
       def initialize index
@@ -194,8 +194,18 @@ class Parsely
     r=elems.map do |e|
       case e
       when /(\w+)\(\_(\d+)\)/
-        klass=Ops[$1.to_sym]
+        opname = $1.to_sym
+        klass=Ops[opname]
         if klass.nil?
+=begin
+          if respond_to? opname
+            klass = cmd do
+              def _process(value)
+                send opname, value
+              end
+            end
+          else
+=end
           abort "unknown op '#$1'"
         end
         klass.new(Value.new($2.to_i))
@@ -217,10 +227,24 @@ class Parsely
     end
   end
 
+  def load_rc
+    rcfile = if  ENV["PARSELYRC"]
+      ENV["PARSELYRC"]
+    else
+      home = ENV["HOME"] || Dir.pwd
+      home+"/.parselyrc"
+      #_parsely, $parsely etc
+    end
+    if File.exists?(rcfile)
+      load rcfile
+    end
+  end
+
   def main
     if ARGV.empty?
       abort("usage #$0 <expr> <file file file| stdin >")
     end
+    load_rc
     expr = ARGV.shift
     main_loop(expr,ARGF)
   end
