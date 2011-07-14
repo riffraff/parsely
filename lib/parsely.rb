@@ -137,7 +137,7 @@ class Parsely
         super
       	@running_freqs = Hash.new(0)
         @running_count = 0
-	as_ary=nil
+	      as_ary=nil
         @result = proc do
           if as_ary.nil?
             as_ary=@running_freqs.sort_by do |k,v| [-v,k] end.each
