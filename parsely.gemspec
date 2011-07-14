@@ -6,12 +6,12 @@ Gem::Specification.new do |s|
   s.name        = "parsely"
   s.version     = Parsely::VERSION
   s.authors     = ["Gabriele Renzi"]
-  s.email       = ["rff.rff@gmail.com"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.email       = ["rff.rff+parsely@gmail.com"]
+  s.homepage    = "http://github.com/riffraff/parsely"
+  s.summary     = %q{a simple tool for text file wrangling}
+  s.description = %q{a simple tool for text file wrangling}
 
-  s.rubyforge_project = "parsely"
+  #s.rubyforge_project = "parsely"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
