@@ -1,3 +1,5 @@
+require 'bundler/gem_tasks'
+
 ENV['PATH']+=':'+File.join(File.dirname(__FILE__),'bin/')
 ENV['RUBYLIB']||=''
 ENV['RUBYLIB']+=':'+File.join(File.dirname(__FILE__),'lib/')

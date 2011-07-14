@@ -48,6 +48,7 @@ class Proc
   end
 end
 class Parsely
+  VERSION = "0.1.0"
   def self.cmd(&block)
     klass = Struct.new :value, &block
     klass.class_eval do 
