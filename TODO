@@ -19,3 +19,4 @@ summaryse is a cool extension from which to steal stuff. Maybe provide basic fun
 - given [/m/09_pbpl      /type/object/key        /soft/isbn/9780491035453,..] and [/m/077601h      /book/isbn/book_editions        /m/09_pbpl] get [/m/09_pbpl /soft/isbn/9780491035453]
 - use merge sorted and merge unsorted probably
 - find a simpler way to do aggregates
+- top k

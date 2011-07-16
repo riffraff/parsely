@@ -1,0 +1,45 @@
+# DISCLAIMER
+
+Do Not Use This. 
+At the moment it is mostly a code dump, and a bad one at
+that, while I slowly add the stuff I need. One day I will refactor the
+code and add useful options and make it reliable and it may become a
+useful project for other people. As it stands, it is not, just move on.
+
+
+## Summary
+parsely is a tool to extract and manipulate text files.
+Basically, it allows you to run ruby one liners (think `-n/-p`) with some additional
+shortcuts. 
+
+parsely is intended as a replacement for all those single-use-and-discard scripts 
+in sed/awk/perl/ruby that I constantly end up rewriting, such as counting frequencies, 
+summing fields, selecting (c,t)sv rows by field values etc
+
+It does nothing you can't do with a few pipes, sed, awk, grep, ack, perl, 
+ruby, sort, uniq, bc, ministats and comm.
+
+It is useful for me because 
+* I am very bad at remembering options for command line tools, and get
+  confused when BSD and GNU tools don't match
+* I always get confused escaping stuff in the shell
+* I have written or googled a freq.awk a dozen times
+
+This is most likely useless to you.
+
+## INSTALLATION
+
+Running
+
+    gem install parsely
+
+should be enough to install. 
+I use ruby (YARV) 1.9.2 and have not tested this anywhere else.
+
+## SUPPORT
+
+Open a ticket at http://github.com/riffraff/parsely/issues if you want
+something in parsely, but I don't think you should use this tool, at
+least for the next couple of years. 
+Or you can write me an email at rff.rff+parsely@gmail.com if you want.
+
