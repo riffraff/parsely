@@ -259,7 +259,11 @@ class Parsely
 
   def main
     if ARGV.empty?
-      abort("usage #$0 <expr> <file file file| stdin >")
+      abort("usage #$0 [-l |<expr> <file file file| stdin >]")
+    elsif ARGV[0] == '-l'
+      puts " Available aggregate functions:"
+      puts Ops.keys.map {|k| "\t#{k}"}
+      exit
     end
     load_rc
     expr = ARGV.shift
