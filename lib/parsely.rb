@@ -75,7 +75,7 @@ class Proc
   end
 end
 class Parsely
-  VERSION = "0.1.3"
+  VERSION = "0.1.4"
   def self.cmd(&block)
     Struct.new :value, &block
   end

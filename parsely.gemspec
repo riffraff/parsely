@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/riffraff/parsely"
   s.summary     = %q{a simple tool for text file wrangling}
   s.description = %q{parsely is a simple tool for managing text files.
+                     DO NOT USE IT.
                      Mostly to replace a lot of awk/sed/ruby/perl one-off scripts.
                      This is an internal release, guaranteed to break and ruin your life.}
 
