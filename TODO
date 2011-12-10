@@ -20,3 +20,5 @@ summaryse is a cool extension from which to steal stuff. Maybe provide basic fun
 - use merge sorted and merge unsorted probably
 - find a simpler way to do aggregates
 - top k
+selext top/max N or N% ditto for minus
+select outliers
