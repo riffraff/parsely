@@ -1,13 +1,22 @@
 require 'set'
 require 'English'
 $OUTPUT_FIELD_SEPARATOR = ' '
-
+module Kernel
   def p args
     STDERR.puts(args.inspect) #if $DEBUG
   end
+end
 
 class PseudoBinding
   class PerlVar < String
+    # this is not defined in terms of <=>
+    def == other
+      if other.is_a? Numeric
+        to_f == other
+      else
+        super
+      end
+    end
     def <=> other
       if other.is_a? Numeric
         to_f <=> other
@@ -18,11 +27,24 @@ class PseudoBinding
     def inspect
       "PerlVar(#{super})"
     end
+    #unneed as of now
+    #def coerce something
+    #  [something, to_f]
+    #end
+    def + other
+      case other
+      when Numeric
+        PerlVar.new((to_i + other).to_s)
+      when String
+        PerlVar.new((to_s + other).to_s)
+      end
+    end
   end
   PerlNil = PerlVar.new ''
   attr :line
+  attr :vals
   def initialize lineno, vals
-    @line, @vals = lineno, vals.map {|x| PerlVar.new(x)}
+    @line, @vals = PerlVar.new(lineno.to_s), vals.map {|x| PerlVar.new(x)}
   end
   def method_missing name, *args
     if args.empty?
@@ -34,6 +56,11 @@ class PseudoBinding
     else
       super
     end
+  end
+end
+class Array
+  def value
+    self
   end
 end
 class String
@@ -50,31 +77,16 @@ end
 class Parsely
   VERSION = "0.1.3"
   def self.cmd(&block)
-    klass = Struct.new :value, &block
-    klass.class_eval do 
-      def process(items)
-        value.assign(items)
-        _process(value)
-      end
-    end
-    klass
+    Struct.new :value, &block
   end
   RGX= /"(.*?)"|\[(.*?)\]|([^\s]+)/
-  Value = Struct.new :index, :value do
-    def assign(items)
-      self.value = items[index]
-    end
-    def process(items)
-      items[index]
-    end
-    def to_i
-      value.to_i
-    end
-    def to_f
-      value.to_f
+
+  Expression = Struct.new :code, :items do
+    def process(pb)
+      result = pb.instance_eval(code)
     end
     def to_s
-      value.to_s
+      code.to_s
     end
   end
   Ops = {
@@ -85,27 +97,27 @@ class Parsely
         @result = proc { @running_value }
         @result.single = true
       end
-      def _process(value)
+      def process(value)
         if value.to_f < @running_value  
           @running_value = value.to_f
         end
         @result
       end
     end,
-      :max => cmd do
+    :max => cmd do
       def initialize index
         super
         @running_value = Float::MIN #-Inf would be better
         @result = proc { @running_value }
         @result.single = true
       end
-      def _process(value)
+      def process(value)
         if value.to_f > @running_value
           @running_value = value.to_f
         end
         @result
       end
-      end,
+    end,
     :sum => cmd do
       def initialize index
         super
@@ -113,7 +125,7 @@ class Parsely
         @result = proc { @running_value }
         @result.single = true
       end
-      def _process(value)
+      def process(value)
         @running_value += value.to_i
         @result
       end
@@ -126,7 +138,7 @@ class Parsely
         @result = proc { @running_value/@running_count.to_f }
         @result.single = true
       end
-      def _process(value)
+      def process(value)
         @running_value += value.to_i
         @running_count += 1
         @result
@@ -146,7 +158,7 @@ class Parsely
           [v, k]
         end
       end
-      def _process(value)
+      def process(value)
         @running_freqs[value.to_s]+=1
         @running_count += 1
         @result
@@ -180,39 +192,32 @@ class Parsely
           cached.next
         end
       end
-      def _process(value)
+      def process(value)
         @running_values << value.to_i
         @result
       end
     end,
   }
+  PseudoBinding.class_eval do
+    Ops.each do |k,v|
+      #instantiating the object is expensive and we are not using 99% of them
+      obj = nil
+      define_method k do |values|
+        obj ||= v.new(nil)
+        obj.process(values)
+      end
+    end
+  end
 
   def parse(expr)
     val, cond = expr.split(/ if /)
                               # p [ val, cond]
-    elems=val.split
-    r=elems.map do |e|
-      case e
-      when /(\w+)\(\_(\d+)\)/
-        opname = $1.to_sym
-        klass=Ops[opname]
-        if klass.nil?
-=begin
-          if respond_to? opname
-            klass = cmd do
-              def _process(value)
-                send opname, value
-              end
-            end
-          else
-=end
-          abort "unknown op '#$1'"
-        end
-        klass.new(Value.new($2.to_i))
-      when /\_(\d+)/
-        Value.new($1.to_i)
-      end
+
+    val = '['+val+']'
+    if val =~ /([\(\)\w])( ([\(\)\w]))+/
+      val = val.split(" ").join(",")
     end
+    r = Expression.new(val)
     [r, parse_cond(cond)]
   end
 
@@ -223,7 +228,7 @@ class Parsely
     when nil, ''
       proc { |bnd| true }
     else
-    proc { |bnd| bnd.instance_eval(str) }
+      proc { |bnd| bnd.instance_eval(str) }
     end
   end
 
@@ -250,7 +255,7 @@ class Parsely
   end
 
   def main_loop(expr,lines)
-    ast, cond =parse(expr)
+    expression, cond =parse(expr)
     result = []
     result = lines.map.with_index do |line, lineno|
       line.chomp!
@@ -263,15 +268,14 @@ class Parsely
       #XXX ugly
       next unless items
       b = PseudoBinding.new(lineno, items)
-      ast.map do |a| 
-        a.process(items) if cond[b]
-      end 
+      expression.process(b) if cond[b]
     end
     last = []
     result.each do |cols|
+      next if cols.nil? #when test fails
       result_line = cols.map do |col|
         next if col.nil?
-        col.value 
+        col.value
       end.join.strip 
       same_results = cols.zip(last).map do |a,b| 
         a.respond_to?(:single) && a.single && a.object_id == b.object_id && !a.is_a?(Numeric) 

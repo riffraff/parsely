@@ -17,3 +17,8 @@ task :newtest, :name do |t, args|
   new = new + '-' + args[:name] if args[:name]
   cp_r 'test/basic/'+old, 'test/basic/'+new
 end
+
+desc 'run tests with profiler'
+task :profile do
+  sh "ruby-prof test/cli-runner.rb"
+end

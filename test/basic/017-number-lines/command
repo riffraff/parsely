@@ -1,0 +1,1 @@
+parsely 'line + ": " + _0' lines.txt
