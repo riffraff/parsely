@@ -90,6 +90,18 @@ class Parsely
     end
   end
   Ops = {
+    :count => cmd do
+      def initialize value
+        super
+        @running_value = 0
+        @result = proc { @running_value }
+        @result.single = true
+      end
+      def process(value)
+        @running_value += 1
+        @result
+      end
+    end,
     :min => cmd do
       def initialize value
         super
