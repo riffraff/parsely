@@ -5,6 +5,7 @@ def make_runner(dir)
   klass= Class.new Test::Unit::TestCase do
     test_dir = File.expand_path("test/#{dir}/0*")
     Dir[test_dir].each do |d|
+      start = Time.now
       define_method 'test_'+dir+'_'+d.split("/").last do
         Dir.chdir(d)
         command = File.read('command')
@@ -12,6 +13,7 @@ def make_runner(dir)
         expected = File.read('output')
         assert_equal expected.chomp.strip, output.chomp.strip
       end
+      p Time.now - start
     end
   end
   Object.const_set 'Test_'+dir, klass
