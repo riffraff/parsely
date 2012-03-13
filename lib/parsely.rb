@@ -94,7 +94,7 @@ class Parsely
 
   Expression = Struct.new :code, :items do
     def process(pb)
-      result = pb.instance_eval(code)
+      result = pb.instance_eval(code, __FILE__, __LINE__+1)
     end
     def to_s
       code.to_s
