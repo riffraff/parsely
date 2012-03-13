@@ -1,3 +1,4 @@
+
 # DISCLAIMER
 
 Do Not Use This. 
@@ -43,3 +44,4 @@ something in parsely, but I don't think you should use this tool, at
 least for the next couple of years. 
 Or you can write me an email at rff.rff+parsely@gmail.com if you want.
 
+[![Build Status](https://secure.travis-ci.org/riffraff/parsely.png?branch=master)](http://travis-ci.org/riffraff/parsely)
