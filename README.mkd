@@ -21,6 +21,7 @@ It does nothing you can't do with a few pipes, sed, awk, grep, ack, perl,
 ruby, sort, uniq, bc, ministats and comm.
 
 It is useful for me because 
+
 * I am very bad at remembering options for command line tools, and get
   confused when BSD and GNU tools don't match
 * I always get confused escaping stuff in the shell
