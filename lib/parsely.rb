@@ -130,10 +130,10 @@ class Parsely
       end
     end,
     :top => cmd do
-      def initialize value
+      def initialize values
         super
         @running_values = []
-        @result = proc { @running_value.sort.last(@k) }
+        @result = proc { @running_values.sort {|a,b| b <=> a}.first(@k).join("\n") }
         @result.single = true
       end
       def process(k, value)
@@ -254,7 +254,7 @@ class Parsely
     Ops.each do |k,v|
       #instantiating the object is expensive and we are not using 99% of them
       obj = nil
-      define_method k do |values|
+      define_method k do |*values|
         obj ||= v.new(nil)
         obj.process(*values)
       end
