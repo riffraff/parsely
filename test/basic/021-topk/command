@@ -1,0 +1,1 @@
+parsely 'top(2, _1)' lines.txt
