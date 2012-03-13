@@ -39,7 +39,18 @@ class PseudoBinding
         PerlVar.new((to_s + other).to_s)
       end
     end
+    if ENV['GEOIP_CITY_DATA'] and File.exists?(ENV['GEOIP_CITY_DATA'])
+        require 'geoip'
+        geoip = GeoIP.new(ENV['GEOIP_CITY_DATA'])
+        GeoIP::City.members.each do |m|
+          define_method m do
+            geoip.city(self)[m]
+          end
+        end
+    end
   end
+
+
   PerlNil = PerlVar.new ''
   attr :line
   attr :vals
@@ -90,6 +101,22 @@ class Parsely
     end
   end
   Ops = {
+    :timediff => cmd do
+     def initialize value
+       require 'date'
+       @running_value = nil
+     end 
+     def process(value)
+       new_value = DateTime.parse(value).to_time
+       if @running_value.nil?
+         @result = new_value.to_s
+       else
+        @result = ">\t+" + (new_value -  @running_value).to_s
+       end
+       @running_value = new_value
+       @result
+     end
+    end,
     :count => cmd do
       def initialize value
         super
@@ -99,6 +126,19 @@ class Parsely
       end
       def process(value)
         @running_value += 1
+        @result
+      end
+    end,
+    :top => cmd do
+      def initialize value
+        super
+        @running_values = []
+        @result = proc { @running_value.sort.last(@k) }
+        @result.single = true
+      end
+      def process(k, value)
+        @k ||= k
+        @running_values << value
         @result
       end
     end,
@@ -216,7 +256,7 @@ class Parsely
       obj = nil
       define_method k do |values|
         obj ||= v.new(nil)
-        obj.process(values)
+        obj.process(*values)
       end
     end
   end

@@ -22,3 +22,4 @@ summaryse is a cool extension from which to steal stuff. Maybe provide basic fun
 - top k
 selext top/max N or N% ditto for minus
 select outliers
+parsely '_1.each_cons(3).to_a if rand(400)==1' /usr/share/dict/words |pbcopy #make PerlVar enumerable
