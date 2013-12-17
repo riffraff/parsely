@@ -26,3 +26,4 @@ parsely '_1.each_cons(3).to_a if rand(400)==1' /usr/share/dict/words |pbcopy #ma
 document GEOIP, and everything else
 list fields, eg pr -l => _1 _2(_1 _2) _3 _4
 on -k also perform file guessing (e.g. headers for csv, common log format)
+diffcount
